@@ -1,9 +1,14 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '../auth';
+import { SecondaryButton } from '../components/SecondaryButton';
+import { fonts, palette, spacing } from '../theme/theme';
+import { useScale } from '../theme/useScale';
 
 export function HomeScreen() {
   const { logout } = useAuth();
+  const { s } = useScale();
+  const styles = createStyles(s);
 
   return (
     <View style={styles.container}>
@@ -12,51 +17,43 @@ export function HomeScreen() {
       <Text style={styles.subtitle}>
         This is your home screen. Your signed-in experience starts here.
       </Text>
-      <Pressable accessibilityRole="button" onPress={logout} style={styles.logoutButton}>
-        <Text style={styles.logoutText}>Log out</Text>
-      </Pressable>
+      <SecondaryButton label="Log out" onPress={logout} style={styles.logoutButton} />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(s: (value: number) => number) {
+  return StyleSheet.create({
   container: {
-    backgroundColor: '#F7F4EE',
+    backgroundColor: palette.background,
     flex: 1,
-    padding: 28,
-    paddingTop: 56,
+    padding: s(spacing.xl),
+    paddingTop: s(56),
   },
   greeting: {
-    color: '#B85C38',
-    fontSize: 15,
-    fontWeight: '700',
+    color: palette.accent,
+    fontFamily: fonts.bold,
+    fontSize: s(15),
     letterSpacing: 1,
     textTransform: 'uppercase',
   },
   title: {
-    color: '#213547',
-    fontSize: 34,
-    fontWeight: '800',
-    marginTop: 12,
+    color: palette.ink,
+    fontFamily: fonts.bold,
+    fontSize: s(34),
+    marginTop: s(spacing.md),
   },
   subtitle: {
-    color: '#60717C',
-    fontSize: 17,
-    lineHeight: 26,
-    marginTop: 12,
-    maxWidth: 320,
+    color: palette.subink,
+    fontFamily: fonts.regular,
+    fontSize: s(17),
+    lineHeight: s(26),
+    marginTop: s(spacing.md),
+    maxWidth: s(320),
   },
   logoutButton: {
     alignItems: 'center',
-    borderColor: '#213547',
-    borderRadius: 10,
-    borderWidth: 1,
-    marginTop: 32,
-    paddingVertical: 15,
+    marginTop: s(spacing.xxl),
   },
-  logoutText: {
-    color: '#213547',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-});
+  });
+}

@@ -7,16 +7,24 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { forgotPassword } from '../api';
 import type { RootStackParamList } from '../navigation';
+import { FormInput } from '../components/FormInput';
+import { PrimaryButton } from '../components/PrimaryButton';
+import { fonts, palette, radius, spacing } from '../theme/theme';
+import { useScale } from '../theme/useScale';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ForgotPassword'>;
 
+const STITCH_COUNT = 3;
+
 export function ForgotPasswordScreen({ navigation }: Props) {
+  const { s } = useScale();
+  const styles = createStyles(s);
   const [gmail, setGmail] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,93 +55,187 @@ export function ForgotPasswordScreen({ navigation }: Props) {
   }
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={styles.container}
-    >
-      <View>
-        <Text style={styles.title}>Forgot password?</Text>
-        <Text style={styles.subtitle}>
-          Enter your Gmail address and we will send you a reset code.
-        </Text>
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.container}
+      >
+        <View>
+          <View style={styles.headerRow}>
+            <Pressable
+              accessibilityRole="button"
+              hitSlop={12}
+              onPress={() => navigation.goBack()}
+              style={styles.backButton}
+            >
+              <Text style={styles.backArrow}>←</Text>
+            </Pressable>
 
-        <View style={styles.form}>
-          <TextInput
-            autoCapitalize="none"
-            autoComplete="email"
-            keyboardType="email-address"
-            onChangeText={setGmail}
-            placeholder="Email address"
-            placeholderTextColor="#8A989F"
-            style={styles.input}
-            value={gmail}
-          />
-          {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
-          <Pressable
-            accessibilityRole="button"
-            disabled={isSubmitting}
-            onPress={handleSendCode}
-            style={[styles.primaryButton, isSubmitting && styles.disabledButton]}
-          >
-            <Text style={styles.primaryButtonText}>
-              {isSubmitting ? 'Sending code...' : 'Send reset code'}
+            <View style={styles.brandMark}>
+              <Text style={styles.brandMarkText}>K</Text>
+            </View>
+          </View>
+
+          <Text style={styles.title}>Forgot password?</Text>
+          <Text style={styles.subtitle}>
+            Enter your Gmail address and we will send you a reset code.
+          </Text>
+
+          {/* Reassurance card, same stitched-spine motif used across the auth flow */}
+          <View style={styles.reassuranceCard}>
+            <View style={styles.reassuranceStitchRail}>
+              {Array.from({ length: STITCH_COUNT }).map((_, index) => (
+                <View key={index} style={styles.reassuranceStitchDot} />
+              ))}
+            </View>
+            <Text style={styles.reassuranceText}>
+              We only use this to send your one-time reset code. Your khata data stays put.
             </Text>
-          </Pressable>
+          </View>
+
+          <View style={styles.form}>
+            <FormInput
+              autoCapitalize="none"
+              autoComplete="email"
+              keyboardType="email-address"
+              label="Gmail address"
+              onChangeText={setGmail}
+              placeholder="you@example.com"
+              value={gmail}
+            />
+
+            {errorMessage ? (
+              <View style={styles.errorBanner}>
+                <Text style={styles.errorText}>{errorMessage}</Text>
+              </View>
+            ) : null}
+
+            <PrimaryButton
+              label={isSubmitting ? 'Sending code...' : 'Send reset code'}
+              disabled={isSubmitting}
+              onPress={handleSendCode}
+              style={isSubmitting ? styles.disabledButton : undefined}
+            />
+          </View>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#F7F4EE',
-    flex: 1,
-    padding: 28,
-  },
-  title: {
-    color: '#213547',
-    fontSize: 34,
-    fontWeight: '800',
-    marginTop: 28,
-  },
-  subtitle: {
-    color: '#60717C',
-    fontSize: 17,
-    lineHeight: 25,
-    marginTop: 10,
-  },
-  form: {
-    gap: 14,
-    marginTop: 36,
-  },
-  input: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#D7DDD8',
-    borderRadius: 10,
-    borderWidth: 1,
-    color: '#213547',
-    fontSize: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 15,
-  },
-  primaryButton: {
-    alignItems: 'center',
-    backgroundColor: '#213547',
-    borderRadius: 10,
-    marginTop: 8,
-    paddingVertical: 17,
-  },
-  primaryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  disabledButton: {
-    opacity: 0.65,
-  },
-  error: {
-    color: '#B33A3A',
-    fontSize: 14,
-  },
-});
+function createStyles(s: (value: number) => number) {
+  return StyleSheet.create({
+    safeArea: {
+      backgroundColor: palette.background,
+      flex: 1,
+    },
+    container: {
+      backgroundColor: palette.background,
+      flex: 1,
+      padding: s(spacing.xl),
+    },
+    headerRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: s(spacing.md),
+    },
+    backButton: {
+      alignItems: 'center',
+      backgroundColor: palette.featureBg,
+      borderRadius: radius.sm,
+      height: s(38),
+      justifyContent: 'center',
+      width: s(38),
+    },
+    backArrow: {
+      color: palette.accent,
+      fontFamily: fonts.bold,
+      fontSize: s(16),
+    },
+    brandMark: {
+      alignItems: 'center',
+      backgroundColor: palette.accent,
+      borderRadius: radius.md,
+      height: s(44),
+      justifyContent: 'center',
+      width: s(44),
+    },
+    brandMarkText: {
+      color: palette.primaryText,
+      fontFamily: fonts.bold,
+      fontSize: s(18),
+    },
+    title: {
+      color: palette.ink,
+      fontFamily: fonts.bold,
+      fontSize: s(34),
+      marginTop: s(spacing.xl),
+    },
+    subtitle: {
+      color: palette.subink,
+      fontFamily: fonts.regular,
+      fontSize: s(17),
+      lineHeight: s(25),
+      marginTop: s(spacing.sm),
+    },
+
+    // Reassurance card: same stitched-spine language as the rest of the auth flow
+    reassuranceCard: {
+      backgroundColor: palette.featureBg,
+      borderColor: palette.featureBorder,
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      flexDirection: 'row',
+      marginTop: s(24),
+      overflow: 'hidden',
+      paddingLeft: s(24),
+      paddingRight: s(16),
+      paddingVertical: s(14),
+      position: 'relative',
+    },
+    reassuranceStitchRail: {
+      alignItems: 'center',
+      bottom: 0,
+      justifyContent: 'space-evenly',
+      left: s(10),
+      paddingVertical: s(12),
+      position: 'absolute',
+      top: 0,
+      width: s(4),
+    },
+    reassuranceStitchDot: {
+      backgroundColor: palette.accent,
+      borderRadius: s(2),
+      height: s(4),
+      opacity: 0.45,
+      width: s(4),
+    },
+    reassuranceText: {
+      color: palette.ink,
+      flex: 1,
+      fontFamily: fonts.regular,
+      fontSize: s(13),
+      lineHeight: s(19),
+    },
+
+    form: {
+      gap: s(spacing.md),
+      marginTop: s(28),
+    },
+    errorBanner: {
+      backgroundColor: palette.featureBg,
+      borderColor: palette.secondaryBorder,
+      borderRadius: radius.sm,
+      borderWidth: 1,
+      padding: s(spacing.md),
+    },
+    errorText: {
+      color: palette.accentDark,
+      fontFamily: fonts.medium,
+      fontSize: s(13),
+    },
+    disabledButton: {
+      opacity: 0.65,
+    },
+  });
+}
